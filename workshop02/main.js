@@ -19,7 +19,6 @@ const db = CitiesDB({
 
 const app = express();
 
-//disable etag / caching
 app.set('etag', false)
 
 app.use(express.json());
@@ -29,27 +28,25 @@ app.use(express.urlencoded({ extended: true }));
 
 // Mandatory workshop
 // TODO GET /api/states
-app.get('/api/states', (req, resp) => {
-	
-	// set content-type:
+app.get('/api/states', 
+    (req, resp) => {
 
-	resp.type('application/json')
-	db.findAllStates()
-		.then(result => {
-			//200 ok
-			resp.status(200)
-			resp.json(result)
-		})
-		.catch(error => {
-			//400 bad result
-			resp.status(400)
-			resp.json({error: error})
+        // Content-Type: appliction/json
+        resp.type('application/json')
 
-		});
-
-});
-
-
+        db.findAllStates()
+            .then(result => {
+                // 200 OK
+                resp.status(200)
+                resp.json(result);
+            })
+            .catch(error => {
+                // 400 Bad Request
+                resp.status(400)
+                resp.json({ error: error })
+            });
+    }
+);
 
 // TODO GET /api/state/:state
 app.get('/api/state/:state', 
@@ -70,14 +67,13 @@ app.get('/api/state/:state',
                 resp.json(result.map(v => `/api/city/${v}`));
             })
             .catch(error => {
-                // 400 Bad result
+                // 400 Bad Request
                 resp.status(400)
                 resp.json({ error: error })
             });
 
     }
 );
-
 
 // TODO GET /api/city/:cityId
 app.get('/api/city/:cityId', (req, resp) => {
@@ -86,11 +82,13 @@ app.get('/api/city/:cityId', (req, resp) => {
 	resp.type('application/json')
 	db.findCityById(req.params.cityId)
 		.then(result => {
-			//200 ok
-			resp.status(200)
-			resp.json(result);		
-		
-
+            if (result.length > 0) {
+                //200 ok
+			    resp.status(200)
+			    resp.json(result[0]);
+            }
+            resp.status(404);
+            resp.json({ error: `City not found: ${req.params.cityId}`})
 		})
 		.catch(error => {
 			//400 bad result
@@ -103,12 +101,22 @@ app.get('/api/city/:cityId', (req, resp) => {
 
 
 // TODO POST /api/city
-app.post('/api/city', (req, resp) => {
-	const newCity = req.body;
 
-
-
-})
+app.post('/api/city', 
+    (req, resp) => {
+        const newCity = req.body;
+        resp.type('application/json')
+        db.insertCity(newCity)
+            .then(result => {
+                resp.status(201)
+                resp.json(result);
+            })
+            .catch(error => {
+                resp.status(400);
+                resp.json({ error: error});
+            })
+    }
+)
 
 
 
@@ -116,13 +124,11 @@ app.post('/api/city', (req, resp) => {
 // TODO HEAD /api/state/:state
 
 
-
 // TODO GET /state/:state/count
 
 
 
 // TODO GET /city/:name
-
 
 
 // End of workshop
