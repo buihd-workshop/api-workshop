@@ -99,6 +99,7 @@ app.get('/api/city/:cityId', (req, resp) => {
 
 });
 
+//day 2
 
 // TODO POST /api/city
 
